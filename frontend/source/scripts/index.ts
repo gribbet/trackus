@@ -19,6 +19,10 @@ export function flatten<T>(x: T[][]): T[] {
     return [].concat.apply([], x);
 }
 
+export function randomString(count: number) {
+    return Math.random().toString(32).substring(2, 2 + count);
+}
+
 interface UserId extends String { }
 
 interface Position {
@@ -240,32 +244,26 @@ class Trackus extends Container {
 const application = new Application(new Trackus(), document.body);
 application.start();
 
-const user: string = "test";
+const user: string = randomString(4);
 
-/*range(0, 60)
-    .forEach(i =>
-        positionService.add({
-            user: user,
-            longitude: -122.4157053 + 0.01 * (i / 60),
-            latitude: 37.756119 + 0.01 * (i / 60) * (i / 60),
-            timestamp: new Date().getTime() - i * 1000
-        }));*/
+const socket = new WebSocket("ws://localhost:8080/");
 
+socket.addEventListener("message", event => {
+    const position = <Position>JSON.parse(event.data);
+    positionService.add(position);
+    application.update();
+});
 
-
-application.update();
-
-
-window.navigator.geolocation.watchPosition(
-    position =>
-        application.update(() =>
-            positionService.add({
+socket.addEventListener("open", () =>
+    window.navigator.geolocation.watchPosition(
+        position =>
+            socket.send(JSON.stringify({
                 user: user,
                 longitude: position.coords.longitude,
                 latitude: position.coords.latitude,
                 timestamp: position.timestamp
             })),
-    error => console.log(error),
-    {
-        enableHighAccuracy: true
-    });
+        error => console.log(error),
+        {
+            enableHighAccuracy: true
+        }));
