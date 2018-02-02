@@ -16,6 +16,6 @@ object Positions extends TableQuery(new PositionTable(_)) {
 	def insert(position: Position) =
 		(this returning map(_.id)
 			into ((position, id) =>
-				position.copy(id = Some(id)))) += position
+			position.copy(id = Some(id)))) += position
 }
 
