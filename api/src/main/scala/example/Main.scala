@@ -26,7 +26,6 @@ object Main extends App with LazyLogging {
 		server <- BlazeBuilder
 			.withServiceExecutor(executorService)
 			.bindHttp(8080, "0.0.0.0")
-			.enableHttp2(true)
 			.withNio2(true)
 			.mountService(Resources())
 			.start
