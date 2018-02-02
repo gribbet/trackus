@@ -1,4 +1,4 @@
-package example.database
+package trackus.database
 
 import slick.jdbc.H2Profile
 

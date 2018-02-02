@@ -1,8 +1,8 @@
-package example.resource
+package trackus.resource
 
-import example.http.StreamSocket
-import example.model.Position
-import example.service.PositionService
+import trackus.http.StreamSocket
+import trackus.model.Position
+import trackus.service.PositionService
 import io.circe._
 import io.circe.generic.auto._
 import org.http4s.HttpService

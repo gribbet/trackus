@@ -1,9 +1,9 @@
-package example
+package trackus
 
 import com.typesafe.scalalogging.LazyLogging
-import example.database.Database
-import example.resource.Resources
-import example.service.PositionService
+import trackus.database.Database
+import trackus.resource.Resources
+import trackus.service.PositionService
 import org.http4s.server.blaze.BlazeBuilder
 
 import scalaz.stream.io

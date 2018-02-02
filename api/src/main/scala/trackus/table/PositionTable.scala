@@ -1,7 +1,7 @@
-package example.table
+package trackus.table
 
-import example.database.Driver.api._
-import example.model.Position
+import trackus.database.Driver.api._
+import trackus.model.Position
 
 class PositionTable(tag: Tag) extends Table[Position](tag, "position") {
 

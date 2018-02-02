@@ -1,8 +1,8 @@
-package example.query
+package trackus.query
 
-import example.database.Driver.api._
-import example.model.Position
-import example.table.PositionTable
+import trackus.database.Driver.api._
+import trackus.model.Position
+import trackus.table.PositionTable
 import slick.lifted.TableQuery
 
 object Positions extends TableQuery(new PositionTable(_)) {

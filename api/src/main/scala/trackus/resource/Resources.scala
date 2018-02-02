@@ -1,7 +1,7 @@
-package example.resource
+package trackus.resource
 
-import example.http.{CorsResponse, GZipFilter, LoggingFilter}
-import example.service.PositionService
+import trackus.http.{CorsResponse, GZipFilter, LoggingFilter}
+import trackus.service.PositionService
 
 object Resources {
 	def apply()(implicit

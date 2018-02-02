@@ -1,4 +1,4 @@
-package example.model
+package trackus.model
 
 case class Position(
 	val id: Option[Long],

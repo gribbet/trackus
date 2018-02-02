@@ -1,4 +1,4 @@
-package example.http
+package trackus.http
 
 import java.time.{Duration, LocalDateTime}
 

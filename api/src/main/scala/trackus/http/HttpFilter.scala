@@ -1,4 +1,4 @@
-package example.http
+package trackus.http
 
 import org.http4s.HttpService
 

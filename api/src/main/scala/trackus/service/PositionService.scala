@@ -1,10 +1,10 @@
-package example.service
+package trackus.service
 
 import java.util.concurrent.ExecutorService
 
 import com.typesafe.scalalogging.LazyLogging
-import example.model.Position
-import example.query.Positions
+import trackus.model.Position
+import trackus.query.Positions
 import slick.basic.BasicBackend
 import slick.dbio.DBIO
 

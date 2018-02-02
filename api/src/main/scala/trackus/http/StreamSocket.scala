@@ -1,4 +1,4 @@
-package example.http
+package trackus.http
 
 import io.circe._
 import io.circe.syntax._
