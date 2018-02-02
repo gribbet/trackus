@@ -9,13 +9,14 @@ import slick.dbio.DBIO
 
 import scala.concurrent.ExecutionContext
 import scalaz.\/
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, async}
 
 class PositionService(implicit
 	database: BasicBackend#DatabaseDef,
 	executor: ExecutorService) {
 
+	implicit val strategy = Strategy.Executor(executor)
 	implicit val executionContext =
 		ExecutionContext.fromExecutorService(executor)
 
