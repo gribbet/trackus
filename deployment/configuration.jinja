@@ -1,0 +1,105 @@
+resources:
+
+- type: compute.v1.instanceTemplate
+  name: {{ env["deployment"] }}-api-instance-template
+  properties:
+    properties:
+      machineType: f1-micro
+      metadata:
+        items:
+          - key: google-container-manifest
+            value: | 
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: api
+              spec:
+                containers:
+                  - name: api
+                    image: gcr.io/elated-graph-193823/api
+                    imagePullPolicy: Always
+                    ports:
+                      - containerPort: 8080
+                        hostPort: 80
+      disks:
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: projects/google-containers/global/images/family/container-vm
+      networkInterfaces:
+      - network: $(ref.{{ env["deployment"] }}-network.selfLink)
+        accessConfigs:
+          - type: ONE_TO_ONE_NAT
+
+{% for region in properties["regions"] %}
+
+- type: compute.v1.regionInstanceGroupManager
+  name: {{ env["deployment"] }}-api-region-instance-group-{{ region }}
+  properties:
+    region: {{ region }}
+    targetSize: 1
+    baseInstanceName: {{ env["deployment"] }}-api-instance
+    instanceTemplate: $(ref.{{ env["deployment"] }}-api-instance-template.selfLink)
+
+- type: compute.v1.regionAutoscaler
+  name: {{ env["deployment"] }}-api-autoscaler-{{ region }}
+  properties:
+    region: {{ region }}
+    target: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.selfLink)
+    autoscalingPolicy:
+      minNumReplicas: 1
+      maxNumReplicas: 2
+
+{% endfor %}
+
+- type: compute.v1.httpHealthCheck
+  name: {{ env["deployment"] }}-api-health-check
+  properties:
+    port: 80
+    checkIntervalSec: 1
+    timeoutSec: 1
+    requestPath: /health
+
+- type: compute.v1.network
+  name: {{ env["deployment"] }}-network
+  properties:
+    autoCreateSubnetworks: true
+
+- type: compute.v1.firewall
+  name: {{ env["deployment"] }}-firewall
+  properties:
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["80"]
+
+- type: compute.v1.backendService
+  name: {{ env["deployment"] }}-api-backend-service
+  properties:
+    port: 80
+    timeoutSec: 1
+    backends: 
+      {% for region in properties["regions"] %}
+      - group: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.instanceGroup)
+      {% endfor %}
+    healthChecks:
+      - $(ref.{{ env["deployment"] }}-api-health-check.selfLink)
+
+- type: compute.v1.urlMap
+  name: {{ env["deployment"] }}-api-url-map
+  properties:
+    defaultService: $(ref.{{ env["deployment"] }}-api-backend-service.selfLink)
+
+- type: compute.v1.targetHttpProxy
+  name: {{ env["deployment"] }}-api-target-http-proxy
+  properties:
+    urlMap: $(ref.{{ env["deployment"] }}-api-url-map.selfLink)
+
+- type: compute.v1.globalForwardingRule
+  name: {{ env["deployment"] }}-api-global-forwarding-rule
+  properties:
+    portRange: 80
+    target: $(ref.{{ env["deployment"] }}-api-target-http-proxy.selfLink)

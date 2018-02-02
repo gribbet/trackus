@@ -1,0 +1,9 @@
+imports:
+- path: configuration.jinja
+
+resources:
+- name: configuration
+  type: configuration.jinja
+  properties:
+    regions: 
+      - us-west1
