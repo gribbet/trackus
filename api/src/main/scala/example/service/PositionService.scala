@@ -30,7 +30,7 @@ class PositionService(implicit
 		for {
 			position <- task(Positions.insert(position))
 			_ <- topic.publishOne(position)
-		} yield logger.debug(s"Created ${position}")
+		} yield logger.info(s"Created ${position}")
 
 	def stream(): Process[Task, Position] =
 		Process.eval(list()).flatMap(Process.emitAll) ++ topic.subscribe
