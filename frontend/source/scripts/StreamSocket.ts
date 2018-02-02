@@ -2,12 +2,22 @@ export default class StreamSocket<T> {
     private socket: WebSocket;
     private connected: Promise<void>;
 
-    constructor(url: string, handler: (t: T) => void) {
-        this.socket = new WebSocket(url);
+    constructor(
+        private url: string,
+        private handler: (t: T) => void) {
+
+        this.connect();
+    }
+
+    private connect() {
+        this.socket = new WebSocket(this.url);
         this.connected = new Promise(resolve =>
-            this.socket.addEventListener("open", () => resolve()));
+            this.socket.addEventListener("open", () => (
+                console.log("Connected"),
+                resolve())));
         this.socket.addEventListener("message", event =>
-            handler(<T>JSON.parse(event.data)));
+            this.handler(<T>JSON.parse(event.data)));
+        this.socket.addEventListener("close", () => this.connect());
     }
 
     async send(t: T): Promise<void> {
