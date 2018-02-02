@@ -20,6 +20,14 @@ export default class Map extends Component {
         const start = 8;
         const stop = 20;
 
+        const colors = [
+            "#f37e79", "#7998f3", "#bbf379", "#f379df", "#79f3e3",
+            "#f3bf79", "#9c79f3", "#7af379", "#f3799d", "#79c1f3",
+            "#e4f379", "#de79f3", "#79f3ba", "#f39779", "#797ff3",
+            "#a2f379", "#f379c6", "#79e9f3", "#f3d979", "#b579f3",
+            "#79f392", "#f37984", "#79a8f3", "#cbf379", "#f379ee"
+        ]
+
         map.on("load", () => {
             map.addSource("data", {
                 "type": "geojson",
@@ -37,7 +45,10 @@ export default class Map extends Component {
                     "line-join": "round"
                 },
                 "paint": {
-                    "line-color": "#58e8cb",
+                    "line-color": {
+                        "property": "user",
+                        "stops": colors.map((color, i) => [i, color])
+                    },
                     "line-width": ["interpolate", ["linear"], ["zoom"],
                         start, ["*", ["*", ["get", "factor"], ["get", "factor"]], min],
                         stop, ["*", ["*", ["get", "factor"], ["get", "factor"]], max]
@@ -63,7 +74,10 @@ export default class Map extends Component {
                 "type": "circle",
                 "filter": ["==", ["get", "current"], true],
                 "paint": {
-                    "circle-color": "#58e8cb",
+                    "circle-color": {
+                        "property": "user",
+                        "stops": colors.map((color, i) => [i, color])
+                    },
                     "circle-radius": ["interpolate", ["linear"], ["zoom"],
                         start, min / 2,
                         stop, max / 2
@@ -83,13 +97,13 @@ export default class Map extends Component {
                 const duration = 5 * 60 * 1000;
 
                 const features =
-                    flatten(users.map(user => {
+                    flatten(users.map((user, j) => {
                         const current = positionService.current(user);
                         let features: GeoJSON.Feature<any>[] = [];
                         features.push({
                             "type": "Feature",
                             "properties": {
-                                "user": user,
+                                "user": j,
                                 "current": true
                             },
                             "geometry": {
@@ -106,7 +120,7 @@ export default class Map extends Component {
                                     return <GeoJSON.Feature<GeoJSON.LineString>>{
                                         "type": "Feature",
                                         "properties": {
-                                            "user": user,
+                                            "user": j,
                                             "factor": (i + 1) / segments,
                                         },
                                         "geometry": {
