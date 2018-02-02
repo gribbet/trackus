@@ -1,8 +1,9 @@
-package example.http
+package example.resource
 
+import example.http.{CorsResponse, GZipFilter, LoggingFilter}
 import example.service.PositionService
 
-object HttpServices {
+object Resources {
 	def apply()(implicit
 		positionService: PositionService) =
 

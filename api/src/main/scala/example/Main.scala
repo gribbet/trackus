@@ -1,8 +1,10 @@
 package example
 
+import java.nio.file.Paths
+
 import com.typesafe.scalalogging.LazyLogging
 import example.database.Database
-import example.http.HttpServices
+import example.resource.Resources
 import example.service.PositionService
 import org.http4s.server.blaze.BlazeBuilder
 
@@ -15,6 +17,8 @@ object Main extends App with LazyLogging {
 	implicit val database = Database.database
 	implicit val positionService = new PositionService()
 
+	val keypath = Paths.get("server.jks").toAbsolutePath().toString()
+
 	val server: Task[_] = for {
 
 		_ <- positionService.initialize
@@ -24,7 +28,7 @@ object Main extends App with LazyLogging {
 			.bindHttp(8080, "0.0.0.0")
 			.enableHttp2(true)
 			.withNio2(true)
-			.mountService(HttpServices())
+			.mountService(Resources())
 			.start
 
 		_ <- io.stdInLines

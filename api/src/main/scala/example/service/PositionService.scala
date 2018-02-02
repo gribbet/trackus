@@ -2,6 +2,7 @@ package example.service
 
 import java.util.concurrent.ExecutorService
 
+import com.typesafe.scalalogging.LazyLogging
 import example.model.Position
 import example.query.Positions
 import slick.basic.BasicBackend
@@ -14,7 +15,7 @@ import scalaz.stream.{Process, async}
 
 class PositionService(implicit
 	database: BasicBackend#DatabaseDef,
-	executor: ExecutorService) {
+	executor: ExecutorService) extends LazyLogging {
 
 	implicit val strategy = Strategy.Executor(executor)
 	implicit val executionContext =
@@ -29,7 +30,7 @@ class PositionService(implicit
 		for {
 			position <- task(Positions.insert(position))
 			_ <- topic.publishOne(position)
-		} yield ()
+		} yield logger.debug(s"Created ${position}")
 
 	def stream(): Process[Task, Position] =
 		Process.eval(list()).flatMap(Process.emitAll) ++ topic.subscribe
