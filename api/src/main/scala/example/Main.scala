@@ -1,14 +1,11 @@
 package example
 
-import java.nio.file.Paths
-
 import com.typesafe.scalalogging.LazyLogging
 import example.database.Database
 import example.resource.Resources
 import example.service.PositionService
 import org.http4s.server.blaze.BlazeBuilder
 
-import scalaz.concurrent.Task
 import scalaz.stream.io
 
 object Main extends App with LazyLogging {
@@ -17,9 +14,7 @@ object Main extends App with LazyLogging {
 	implicit val database = Database.database
 	implicit val positionService = new PositionService()
 
-	val keypath = Paths.get("server.jks").toAbsolutePath().toString()
-
-	val server: Task[_] = for {
+	val server = for {
 
 		_ <- positionService.initialize
 
