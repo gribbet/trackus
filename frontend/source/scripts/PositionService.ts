@@ -10,7 +10,14 @@ export default class PositionService {
         let index = this.findIndex(
             position.user,
             position.timestamp);
-        this.positions(position.user).splice(
+
+        const positions = this.positions(position.user);
+
+        if (positions.length > 0
+            && positions[index].timestamp === position.timestamp)
+            return;
+
+        positions.splice(
             index,
             0,
             position);
@@ -47,7 +54,7 @@ export default class PositionService {
         let index = positions
             .findIndex(_ => _.timestamp < timestamp);
         if (index === -1)
-            index = positions.length - 1;
+            index = positions.length > 0 ? positions.length - 1 : 0;
         return index;
     }
 }
