@@ -7,7 +7,10 @@ import PositionService from "./PositionService";
 import StreamSocket from "./StreamSocket";
 import Trackus from "./Trackus";
 
-(<any>mapbox).accessToken = "pk.eyJ1IjoiZ3JhaGFtYWVyaWFsbGl2ZSIsImEiOiJjaXlnbjZlZmowM3dhMzJyd3BzMXo2am5wIn0.SIOs2eXS97bVJsRoTcuK-w";
+const socketUrl = "wss://api.trackus.grahamgibbons.com/"
+const mapboxToken = "pk.eyJ1IjoiZ3JhaGFtYWVyaWFsbGl2ZSIsImEiOiJjaXlnbjZlZmowM3dhMzJyd3BzMXo2am5wIn0.SIOs2eXS97bVJsRoTcuK-w";
+
+(<any>mapbox).accessToken = mapboxToken;
 
 export const positionService = new PositionService();
 
@@ -16,7 +19,7 @@ const user: string = randomString(4);
 const application = new Application(new Trackus(), document.body);
 application.start();
 
-const socket = new StreamSocket<Position>("ws://localhost:8080/", position => {
+const socket = new StreamSocket<Position>(socketUrl, position => {
     positionService.add(position);
     application.update();
 });
