@@ -82,7 +82,7 @@ resources:
     target: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.selfLink)
     autoscalingPolicy:
       minNumReplicas: 1
-      maxNumReplicas: 2
+      maxNumReplicas: 1
 
 {% endfor %}
 
