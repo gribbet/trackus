@@ -26,7 +26,7 @@
     "build": "yarn clean && webpack -p --env.production",
     "start": "webpack-dev-server --history-api-fallback --host 0.0.0.0",
     "clean": "rm -rf build",
-    "deploy": "yarn build && cd build && gsutil cp -a public-read * gs://trackus.grahamgibbons.com/ && gsutil -h Cache-Control:public,max-age=60 cp -a public-read *.html gs://trackus.grahamgibbons.com/"
+    "deploy": "yarn build && cd build && gsutil cp -a public-read * gs://trackus-frontend-bucket/ && gsutil -h Cache-Control:public,max-age=60 cp -a public-read *.html gs://trackus-frontend-bucket/"
   },
   "dependencies": {
     "mapbox-gl": "^0.44.0",

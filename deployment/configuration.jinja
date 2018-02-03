@@ -1,7 +1,21 @@
 resources:
 
-- type: compute.v1.instanceTemplate
-  name: {{ env["deployment"] }}-api-instance-template
+- name: {{ env["deployment"] }}-network
+  type: compute.beta.network
+  properties:
+    autoCreateSubnetworks: true
+
+- name: {{ env["deployment"] }}-firewall
+  type: compute.beta.firewall
+  properties:
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["80"]
+
+- name: {{ env["deployment"] }}-api-instance-template
+  type: compute.beta.instanceTemplate
   properties:
     properties:
       machineType: f1-micro
@@ -43,7 +57,7 @@ resources:
         initializeParams:
           sourceImage: projects/cos-cloud/global/images/family/cos-stable
       serviceAccounts:
-      - email: {{ env["project_number"] }}-compute@developer.gserviceaccount.com
+      - email: default
         scopes:
         - https://www.googleapis.com/auth/devstorage.read_only
       networkInterfaces:
@@ -53,16 +67,16 @@ resources:
 
 {% for region in properties["regions"] %}
 
-- type: compute.v1.regionInstanceGroupManager
-  name: {{ env["deployment"] }}-api-region-instance-group-{{ region }}
+- name: {{ env["deployment"] }}-api-region-instance-group-{{ region }}
+  type: compute.beta.regionInstanceGroupManager
   properties:
     region: {{ region }}
     targetSize: 1
     baseInstanceName: {{ env["deployment"] }}-api-instance
     instanceTemplate: $(ref.{{ env["deployment"] }}-api-instance-template.selfLink)
 
-- type: compute.v1.regionAutoscaler
-  name: {{ env["deployment"] }}-api-autoscaler-{{ region }}
+- name: {{ env["deployment"] }}-api-autoscaler-{{ region }}
+  type: compute.beta.regionAutoscaler
   properties:
     region: {{ region }}
     target: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.selfLink)
@@ -72,31 +86,17 @@ resources:
 
 {% endfor %}
 
-- type: compute.v1.httpHealthCheck
-  name: {{ env["deployment"] }}-api-health-check
+- name: {{ env["deployment"] }}-api-health-check
+  type: compute.beta.httpHealthCheck
   properties:
     port: 80
     requestPath: /health
 
-- type: compute.v1.network
-  name: {{ env["deployment"] }}-network
-  properties:
-    autoCreateSubnetworks: true
-
-- type: compute.v1.firewall
-  name: {{ env["deployment"] }}-firewall
-  properties:
-    network: $(ref.{{ env["deployment"] }}-network.selfLink)
-    sourceRanges: ["0.0.0.0/0"]
-    allowed:
-    - IPProtocol: TCP
-      ports: ["80"]
-
-- type: compute.v1.backendService
-  name: {{ env["deployment"] }}-api-backend-service
+- name: {{ env["deployment"] }}-api-backend-service
+  type: compute.beta.backendService
   properties:
     port: 80
-    timeoutSec: 1
+    timeoutSec: 3600
     backends: 
       {% for region in properties["regions"] %}
       - group: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.instanceGroup)
@@ -104,26 +104,57 @@ resources:
     healthChecks:
       - $(ref.{{ env["deployment"] }}-api-health-check.selfLink)
 
-- type: compute.v1.urlMap
-  name: {{ env["deployment"] }}-api-url-map
+- name: {{ env["deployment"] }}-api-url-map
+  type: compute.beta.urlMap
   properties:
     defaultService: $(ref.{{ env["deployment"] }}-api-backend-service.selfLink)
 
-- type: compute.v1.targetHttpsProxy
-  name: {{ env["deployment"] }}-api-target-https-proxy
+- name: {{ env["deployment"] }}-api-target-https-proxy
+  type: compute.beta.targetHttpsProxy
   properties:
     urlMap: $(ref.{{ env["deployment"] }}-api-url-map.selfLink)
     sslCertificates:
-    - $(ref.{{ env["deployment"] }}-certificate-api-trackus-grahamgibbons-com.selfLink)
+    - $(ref.{{ env["deployment"] }}-api-certificate.selfLink)
 
-- type: compute.v1.globalForwardingRule
-  name: {{ env["deployment"] }}-api-global-forwarding-rule
+- name: {{ env["deployment"] }}-api-global-forwarding-rule
+  type: compute.beta.globalForwardingRule
   properties:
     portRange: 443
     target: $(ref.{{ env["deployment"] }}-api-target-https-proxy.selfLink)
 
-- type: compute.v1.sslCertificate
-  name: {{ env["deployment"] }}-certificate-api-trackus-grahamgibbons-com
+- name: {{ env["deployment"] }}-frontend-bucket
+  type: storage.v1.bucket
+  properties:
+    website:
+      mainPageSuffix: index.html
+      notFoundPage: index.html
+
+- name: {{ env["deployment"] }}-frontend-backend-bucket
+  type: compute.beta.backendBucket
+  properties:
+    bucketName: $(ref.{{ env["deployment"] }}-frontend-bucket.name)
+    enableCdn: true
+
+- name: {{ env["deployment"] }}-frontend-url-map
+  type: compute.beta.urlMap
+  properties:
+    defaultService: $(ref.{{ env["deployment"] }}-frontend-backend-bucket.selfLink)  
+
+- name: {{ env["deployment"] }}-frontend-target-https-proxy
+  type: compute.beta.targetHttpsProxy
+  properties:
+    urlMap: $(ref.{{ env["deployment"] }}-frontend-url-map.selfLink)
+    sslCertificates:
+    - $(ref.{{ env["deployment"] }}-frontend-certificate.selfLink)
+
+- name: {{ env["deployment"] }}-frontend-global-forwarding-rule
+  type: compute.beta.globalForwardingRule
+  properties:
+    portRange: 443
+    target: $(ref.{{ env["deployment"] }}-frontend-target-https-proxy.selfLink)
+
+- name: {{ env["deployment"] }}-api-certificate
+  type: compute.beta.sslCertificate
   properties:
     certificate: |
       -----BEGIN CERTIFICATE-----
@@ -213,8 +244,8 @@ resources:
       fjt5jUGHZk8GbeNUUJ3Jfg==
       -----END PRIVATE KEY-----
 
-- type: compute.v1.sslCertificate
-  name: {{ env["deployment"] }}-certificate-trackus-grahamgibbons-com
+- name: {{ env["deployment"] }}-frontend-certificate
+  type: compute.beta.sslCertificate
   properties:
     certificate: |
       -----BEGIN CERTIFICATE-----
