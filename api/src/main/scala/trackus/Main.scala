@@ -9,6 +9,7 @@ import org.http4s.server.blaze.BlazeBuilder
 import scalaz.stream.io
 
 object Main extends App with LazyLogging {
+	Logging.start()
 
 	implicit val executorService = Executor()
 	implicit val database = Database.database
