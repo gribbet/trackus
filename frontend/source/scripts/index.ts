@@ -14,7 +14,8 @@ const mapboxToken = "pk.eyJ1IjoiZ3JhaGFtYWVyaWFsbGl2ZSIsImEiOiJjaXlnbjZlZmowM3dh
 
 export const positionService = new PositionService();
 
-const user: string = randomString(4);
+const user: string = localStorage.getItem("user") || randomString(4);
+localStorage.setItem("user", user);
 
 const application = new Application(new Trackus(), document.body);
 application.start();
