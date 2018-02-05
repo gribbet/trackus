@@ -1,15 +1,15 @@
-import sbt.Keys._
-import sbt._
-import sbtdocker._
+import scala.sys.process._
 
 val http4sVersion = "0.16.6"
+
+val projectId = ("gcloud config get-value project" !!).replace("\n", "")
 
 lazy val project = Project(
 	id = "api",
 	base = file("."))
 	.settings(
 
-		version := "0.0.3",
+		version := "0.0.4",
 		organization := "trackus",
 		scalaVersion := "2.12.3",
 
@@ -34,16 +34,18 @@ lazy val project = Project(
 
 			new Dockerfile {
 				from("alpine:3.7")
-				run("apk", "add", "--update", "openjdk8")
+				run("apk", "add", "--update", "libc6-compat", "openjdk8")
 				workDir("/data")
 				expose(8080)
 				add(artifact, artifactTargetPath)
 				entryPoint("java", "-jar", artifactTargetPath)
 			}
 		},
+		imageNames in docker := Seq(
+			ImageName(s"gcr.io/${projectId}/${name.value}:latest")),
 
 		assemblyMergeStrategy in assembly := {
-			case "META-INF/io.netty.versions.properties" => MergeStrategy.discard
+			case "META-INF/io.netty.versions.properties" => MergeStrategy.first
 			case x =>
 				val oldStrategy = (assemblyMergeStrategy in assembly).value
 				oldStrategy(x)
