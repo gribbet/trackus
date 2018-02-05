@@ -1,12 +1,13 @@
 package trackus
 
 import com.typesafe.scalalogging.LazyLogging
+import org.http4s.server.blaze.BlazeBuilder
 import trackus.database.Database
 import trackus.resource.Resources
 import trackus.service.PositionService
-import org.http4s.server.blaze.BlazeBuilder
 
-import scalaz.stream.io
+import scala.io.StdIn
+import scalaz.concurrent.Task
 
 object Main extends App with LazyLogging {
 	Logging.start()
@@ -26,11 +27,13 @@ object Main extends App with LazyLogging {
 			.mountService(Resources())
 			.start
 
-		_ <- io.stdInLines
-			.take(1)
-			.run
+		line <- Task.delay(StdIn.readLine())
 
-		_ <- server.shutdown
+		_ <-
+			if (line != null)
+				server.shutdown
+			else
+				Task.async[Nothing](_ => ())
 
 	} yield server
 
