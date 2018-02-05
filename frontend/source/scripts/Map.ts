@@ -88,25 +88,29 @@ export default class Map extends Component {
         let lastUsers = 0;
         map.setZoom(11);
         map.setCenter([-122.446747, 37.733795]);
+
+        const recenter = () => {
+            const users = positionService.users();
+            const bounds = users
+                .map(_ => positionService.current(_))
+                .map(_ => new mapbox.LngLat(_.longitude, _.latitude))
+                .reduce<mapbox.LngLatBounds | null>((bounds, position) =>
+                    bounds
+                        ? bounds.extend(position)
+                        : new mapbox.LngLatBounds(position, position),
+                null);
+            if (bounds !== null)
+                map.fitBounds(bounds, { maxZoom: 16 });
+        }
+
         return {
             update: () => {
                 const data = <mapbox.GeoJSONSource>map.getSource("data");
 
                 const users = positionService.users();
 
-                if (lastUsers !== users.length) {
-                    const bounds = users
-                        .map(_ => positionService.current(_))
-                        .map(_ => new mapbox.LngLat(_.longitude, _.latitude))
-                        .reduce<mapbox.LngLatBounds | null>((bounds, position) =>
-                            bounds
-                                ? bounds.extend(position)
-                                : new mapbox.LngLatBounds(position, position),
-                        null);
-                    if (bounds !== null)
-                        map.fitBounds(bounds, { maxZoom: 16 });
-                }
-
+                if (lastUsers !== users.length)
+                    recenter();
                 lastUsers = users.length;
 
                 const segments = 20;
