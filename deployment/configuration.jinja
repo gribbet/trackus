@@ -9,7 +9,9 @@ resources:
   type: compute.beta.firewall
   properties:
     network: $(ref.{{ env["deployment"] }}-network.selfLink)
-    sourceRanges: ["0.0.0.0/0"]
+    sourceRanges: 
+    - 130.211.0.0/22
+    - 35.191.0.0/16
     allowed:
     - IPProtocol: TCP
       ports: ["80"]
@@ -42,7 +44,7 @@ resources:
                 [Service]
                 Environment="HOME=/home/api"
                 ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
-                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --name=api -it gcr.io/{{ env["project"] }}/api
+                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --name=api gcr.io/{{ env["project"] }}/api
                 ExecStop=/usr/bin/docker stop api
                 ExecStopPost=/usr/bin/docker rm api
 
@@ -97,7 +99,7 @@ resources:
   type: compute.beta.backendService
   properties:
     port: 80
-    timeoutSec: 3600
+    timeoutSec: 86400
     backends: 
       {% for region in properties["regions"] %}
       - group: $(ref.{{ env["deployment"] }}-api-region-instance-group-{{ region }}.instanceGroup)
