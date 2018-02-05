@@ -9,10 +9,11 @@ object Resources {
 	def apply()(implicit
 		positionService: PositionService) =
 
-		(LoggingFilter andThen
-			GZipFilter andThen
-			CorsResponse) (
+		HealthResource() orElse (
 
-			PositionResource() orElse
-				HealthResource())
+			LoggingFilter andThen
+				GZipFilter andThen
+				CorsResponse) (
+
+			PositionResource())
 }
