@@ -2,16 +2,14 @@ import scala.sys.process._
 
 val http4sVersion = "0.16.6"
 
-val projectId = ("gcloud config get-value project" !!).replace("\n", "")
-
 lazy val project = Project(
 	id = "api",
 	base = file("."))
 	.settings(
 
-		version := "0.0.4",
+		version := "0.0.5",
 		organization := "trackus",
-		scalaVersion := "2.12.3",
+		scalaVersion := "2.12.4",
 
 		scalacOptions := Seq("-unchecked", "-deprecation"),
 
@@ -41,8 +39,11 @@ lazy val project = Project(
 				entryPoint("java", "-jar", artifactTargetPath)
 			}
 		},
-		imageNames in docker := Seq(
-			ImageName(s"gcr.io/${projectId}/${name.value}:latest")),
+		imageNames in docker := {
+			val projectId = ("gcloud config get-value project" !!).replace("\n", "")
+
+			Seq(ImageName(s"gcr.io/${projectId}/${name.value}:latest"))
+		},
 
 		assemblyMergeStrategy in assembly := {
 			case "META-INF/io.netty.versions.properties" => MergeStrategy.first
