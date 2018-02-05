@@ -13,9 +13,14 @@ export default class PositionService {
 
         const positions = this.positions(position.user);
 
-        if (positions.length > 0
-            && positions[index].timestamp === position.timestamp)
-            return;
+        if (positions.length > 0) {
+            const existing = positions[index];
+            if (existing.timestamp === position.timestamp)
+                return;
+            if (existing.latitude === position.latitude
+                && existing.longitude === position.longitude)
+                return;
+        }
 
         positions.splice(
             index,
