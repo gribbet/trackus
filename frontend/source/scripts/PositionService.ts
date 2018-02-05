@@ -52,7 +52,7 @@ export default class PositionService {
     private findIndex(user: string, timestamp: number): number {
         const positions = this.positions(user);
         let index = positions
-            .findIndex(_ => _.timestamp < timestamp);
+            .findIndex(_ => _.timestamp <= timestamp);
         if (index === -1)
             index = positions.length > 0 ? positions.length - 1 : 0;
         return index;
