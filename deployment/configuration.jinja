@@ -42,7 +42,7 @@ resources:
                 [Service]
                 Environment="HOME=/home/api"
                 ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
-                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --name=api gcr.io/{{ env["project"] }}/api
+                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --name=api -it gcr.io/{{ env["project"] }}/api
                 ExecStop=/usr/bin/docker stop api
                 ExecStopPost=/usr/bin/docker rm api
 
