@@ -20,8 +20,11 @@ lazy val project = Project(
 			"io.circe" %% "circe-parser" % "0.8.0",
 			"org.http4s" %% "http4s-blaze-server" % http4sVersion,
 			"org.http4s" %% "http4s-circe" % http4sVersion,
+			"org.http4s" %% "http4s-blaze-client" % http4sVersion,
 			"org.http4s" %% "http4s-dsl" % http4sVersion,
+			"com.google.cloud" % "google-cloud-compute" % "0.33.0-alpha",
 			"com.google.cloud" % "google-cloud-logging-logback" % "0.33.0-alpha",
+			"com.google.cloud" % "google-cloud-pubsub" % "0.33.0-beta",
 			"com.h2database" % "h2" % "1.4.196"),
 
 		buildInfoPackage := "trackus.build",

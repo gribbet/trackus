@@ -5,7 +5,7 @@ resources:
   properties:
     autoCreateSubnetworks: true
 
-- name: {{ env["deployment"] }}-firewall
+- name: {{ env["deployment"] }}-firewall-http
   type: compute.beta.firewall
   properties:
     network: $(ref.{{ env["deployment"] }}-network.selfLink)
@@ -14,7 +14,19 @@ resources:
     - 35.191.0.0/16
     allowed:
     - IPProtocol: TCP
-      ports: ["80"]
+      ports: [80]
+
+{#
+- name: {{ env["deployment"] }}-firewall-ssh
+  type: compute.beta.firewall
+  properties:
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    sourceRanges: 
+    - 0.0.0.0/0
+    allowed:
+    - IPProtocol: TCP
+      ports: [22]
+#}
 
 - name: {{ env["deployment"] }}-api-instance-template
   type: compute.beta.instanceTemplate
@@ -23,6 +35,8 @@ resources:
       machineType: f1-micro
       metadata:
         items:
+        - key: topic
+          value: $(ref.{{ env["deployment"] }}-topic.name)
         - key: user-data
           value: |
             #cloud-config
@@ -155,6 +169,11 @@ resources:
   properties:
     portRange: 443
     target: $(ref.{{ env["deployment"] }}-frontend-target-https-proxy.selfLink)
+
+- name: {{ env["deployment"] }}-topic
+  type: pubsub.v1.topic
+  properties:
+    topic: {{ env["deployment"] }}-topic
 
 - name: {{ env["deployment"] }}-api-certificate
   type: compute.beta.sslCertificate

@@ -1,13 +1,14 @@
 package trackus.resource
 
-import trackus.http.StreamSocket
-import trackus.model.Position
-import trackus.service.PositionService
 import io.circe._
 import io.circe.generic.auto._
 import org.http4s.HttpService
 import org.http4s.circe._
 import org.http4s.dsl._
+import trackus.http.StreamSocket
+import trackus.model.Position
+import trackus.queue.Topic
+import trackus.service.PositionService
 
 import scalaz.stream.sink
 
@@ -18,11 +19,16 @@ object PositionResource {
 	implicit val positionDecoder = Decoder[Position]
 
 	def apply()(implicit
-		positionService: PositionService) = HttpService {
+		positionService: PositionService,
+		positionTopic: Topic[Position]) = HttpService {
 
 		case GET -> Root =>
 			StreamSocket[Position](
-				positionService.stream,
-				sink.lift(positionService.create(_)))
+				positionService.stream ++ positionTopic.subscribe,
+				sink.lift(position =>
+					for {
+						position <- positionService.create(position)
+						_ <- positionTopic.publish(position)
+					} yield ()))
 	}
 }

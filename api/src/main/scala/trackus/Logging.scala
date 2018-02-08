@@ -5,7 +5,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.{Level, LoggerContext, PatternLayout}
 import ch.qos.logback.core.ConsoleAppender
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.ServiceOptions
 import com.google.cloud.logging.logback.LoggingAppender
 import com.typesafe.scalalogging.LazyLogging
 import org.slf4j.LoggerFactory
@@ -46,7 +45,9 @@ object Logging {
 			logger.addAppender(google)
 		}
 
+		context.getLogger("trackus").setLevel(Level.DEBUG)
 		context.getLogger("org.http4s.blaze.channel.ServerChannelGroup").setLevel(Level.WARN)
+		context.getLogger("org.http4s.client.PoolManager").setLevel(Level.OFF)
 
 		logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
 	}
