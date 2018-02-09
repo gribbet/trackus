@@ -1,5 +1,7 @@
 package trackus
 
+import java.nio.channels.UnresolvedAddressException
+
 import com.typesafe.scalalogging.LazyLogging
 import org.http4s._
 import org.http4s.client.Client
@@ -34,16 +36,6 @@ object GoogleMetadata extends LazyLogging {
 								headers = Headers(Header("Metadata-Flavor", "Google")))))
 
 		new GoogleMetadata {
-			val connected = Task.now(true)
-
-			val topic = Task.now("projects/elated-graph-193823/topics/trackus-pubsub-6-topic")
-
-			val database = Task.now("35.226.201.104")
-
-			val instance = Task.now("test")
-		}
-
-		/*new GoogleMetadata {
 
 			lazy val connected: Task[Boolean] =
 				get("")
@@ -60,6 +52,6 @@ object GoogleMetadata extends LazyLogging {
 
 			lazy val instance: Task[String] =
 				get("instance/name")
-		}*/
+		}
 	}
 }
