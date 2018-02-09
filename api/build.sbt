@@ -1,13 +1,14 @@
 import scala.sys.process._
 
 val http4sVersion = "0.16.6"
+val googleCloudVersion = "0.34.0"
 
 lazy val project = Project(
 	id = "api",
 	base = file("."))
 	.settings(
 
-		version := "0.0.5",
+		version := "0.0.7",
 		organization := "trackus",
 		scalaVersion := "2.12.4",
 
@@ -23,9 +24,9 @@ lazy val project = Project(
 			"org.http4s" %% "http4s-blaze-client" % http4sVersion,
 			"org.http4s" %% "http4s-dsl" % http4sVersion,
 
-			"com.google.cloud" % "google-cloud-compute" % "0.33.0-alpha",
-			"com.google.cloud" % "google-cloud-logging-logback" % "0.33.0-alpha",
-			"com.google.cloud" % "google-cloud-pubsub" % "0.33.0-beta",
+			"com.google.cloud" % "google-cloud-compute" % s"${googleCloudVersion}-alpha",
+			"com.google.cloud" % "google-cloud-logging-logback" % s"${googleCloudVersion}-alpha",
+			"com.google.cloud" % "google-cloud-pubsub" % s"${googleCloudVersion}-beta",
 			"com.h2database" % "h2" % "1.4.196",
 			"org.postgresql" % "postgresql" % "42.2.1"),
 
