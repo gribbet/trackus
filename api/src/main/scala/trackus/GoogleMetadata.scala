@@ -2,7 +2,6 @@ package trackus
 
 import java.nio.channels.UnresolvedAddressException
 
-import com.typesafe.scalalogging.LazyLogging
 import org.http4s._
 import org.http4s.client.Client
 import org.http4s.dsl._
@@ -20,7 +19,7 @@ trait GoogleMetadata {
 	val database: Task[String]
 }
 
-object GoogleMetadata extends LazyLogging {
+object GoogleMetadata {
 
 	def apply()(implicit client: Client) = {
 
