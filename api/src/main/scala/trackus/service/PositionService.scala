@@ -3,8 +3,8 @@ package trackus.service
 import java.util.concurrent.ExecutorService
 
 import com.typesafe.scalalogging.LazyLogging
-import slick.basic.BasicBackend
 import slick.dbio.DBIO
+import trackus.database.Database
 import trackus.model.Position
 import trackus.query.Positions
 
@@ -14,17 +14,23 @@ import scalaz.concurrent.Task
 import scalaz.stream.Process
 
 class PositionService(implicit
-	database: BasicBackend#DatabaseDef,
-	executor: ExecutorService) extends LazyLogging {
+	database: Database[_],
+	executor: ExecutorService)
+	extends LazyLogging {
 
-	implicit val executionContext =
+	implicit private val executionContext =
 		ExecutionContext.fromExecutorService(executor)
 
+	private val positions =
+		Positions()
+
 	def initialize() =
-		task(Positions.initialize)
+		task(positions.initialize).handle {
+			case e: Exception => ()
+		}
 
 	def create(position: Position): Task[Position] =
-		task(Positions.insert(position))
+		task(positions.insert(position))
 			.map(position => {
 				logger.info(s"Created ${position}")
 				position
@@ -34,11 +40,11 @@ class PositionService(implicit
 		Process.eval(list()).flatMap(Process.emitAll)
 
 	def list(): Task[List[Position]] =
-		task(Positions.list.map(_.toList))
+		task(positions.list.map(_.toList))
 
 	private def task[R](action: DBIO[R]): Task[R] =
 		Task.async { cb =>
-			database
+			database.database
 				.run(action)
 				.onComplete(x =>
 					cb(\/.fromEither(x.toEither)))

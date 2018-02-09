@@ -1,7 +1,5 @@
 package trackus
 
-import java.nio.channels.UnresolvedAddressException
-
 import com.typesafe.scalalogging.LazyLogging
 import org.http4s._
 import org.http4s.client.Client
@@ -9,16 +7,18 @@ import org.http4s.dsl._
 
 import scalaz.concurrent.Task
 
-trait GoogleService {
+trait GoogleMetadata {
 
-	def connected: Task[Boolean]
+	val connected: Task[Boolean]
 
-	def instance(): Task[String]
+	val instance: Task[String]
 
-	def topic(): Task[String]
+	val topic: Task[String]
+
+	val database: Task[String]
 }
 
-object GoogleService extends LazyLogging {
+object GoogleMetadata extends LazyLogging {
 
 	def apply()(implicit client: Client) = {
 
@@ -33,20 +33,33 @@ object GoogleService extends LazyLogging {
 								uri,
 								headers = Headers(Header("Metadata-Flavor", "Google")))))
 
-		new GoogleService {
+		new GoogleMetadata {
+			val connected = Task.now(true)
 
-			def connected(): Task[Boolean] =
+			val topic = Task.now("projects/elated-graph-193823/topics/trackus-pubsub-6-topic")
+
+			val database = Task.now("35.226.201.104")
+
+			val instance = Task.now("test")
+		}
+
+		/*new GoogleMetadata {
+
+			lazy val connected: Task[Boolean] =
 				get("")
 					.map(_ => true)
 					.handle {
 						case _: UnresolvedAddressException => false
 					}
 
-			def topic(): Task[String] =
+			lazy val topic: Task[String] =
 				get("instance/attributes/topic")
 
-			def instance(): Task[String] =
+			lazy val database: Task[String] =
+				get("instance/attributes/database")
+
+			lazy val instance: Task[String] =
 				get("instance/name")
-		}
+		}*/
 	}
 }

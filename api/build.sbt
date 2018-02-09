@@ -22,10 +22,12 @@ lazy val project = Project(
 			"org.http4s" %% "http4s-circe" % http4sVersion,
 			"org.http4s" %% "http4s-blaze-client" % http4sVersion,
 			"org.http4s" %% "http4s-dsl" % http4sVersion,
+
 			"com.google.cloud" % "google-cloud-compute" % "0.33.0-alpha",
 			"com.google.cloud" % "google-cloud-logging-logback" % "0.33.0-alpha",
 			"com.google.cloud" % "google-cloud-pubsub" % "0.33.0-beta",
-			"com.h2database" % "h2" % "1.4.196"),
+			"com.h2database" % "h2" % "1.4.196",
+			"org.postgresql" % "postgresql" % "42.2.1"),
 
 		buildInfoPackage := "trackus.build",
 

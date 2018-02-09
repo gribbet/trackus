@@ -8,6 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.util.{Failure, Try}
 
 object Executor extends LazyLogging {
+
 	def apply() =
 		Executors.newFixedThreadPool(4, new ThreadFactory() {
 			private val thread = new AtomicInteger(1)

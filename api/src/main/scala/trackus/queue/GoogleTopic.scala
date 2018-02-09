@@ -9,7 +9,7 @@ import com.google.protobuf.ByteString
 import com.google.pubsub.v1.{PubsubMessage, PushConfig, SubscriptionName, TopicName}
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.{Decoder, Encoder, Json, parser}
-import trackus.GoogleService
+import trackus.GoogleMetadata
 
 import scala.util.Try
 import scalaz.concurrent.{Strategy, Task}
@@ -18,10 +18,11 @@ import scalaz.stream.{Process, async}
 object GoogleTopic extends LazyLogging {
 
 	def apply[A](name: String)(implicit
-		service: GoogleService,
 		executor: ExecutorService,
+		googleMetadata: GoogleMetadata,
 		encoder: Encoder[A],
-		decoder: Decoder[A]): Task[Topic[A]] = {
+		decoder: Decoder[A]
+	): Task[Topic[A]] = {
 
 		implicit val strategy = Strategy.Executor(executor)
 
@@ -31,7 +32,7 @@ object GoogleTopic extends LazyLogging {
 		val queue = async.unboundedQueue[A]
 
 		for {
-			instance <- service.instance()
+			instance <- googleMetadata.instance
 
 			subscription = SubscriptionName.of(projectId, s"${topic.getTopic}-${instance}")
 

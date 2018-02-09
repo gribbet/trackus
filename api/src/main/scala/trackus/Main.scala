@@ -1,14 +1,9 @@
 package trackus
 
 import com.typesafe.scalalogging.LazyLogging
-import io.circe.generic.auto._
-import io.circe.{Decoder, Encoder}
-import org.http4s.circe._
-import org.http4s.client.blaze.{BlazeClientConfig, PooledHttp1Client}
 import org.http4s.server.blaze.BlazeBuilder
-import trackus.database.Database
-import trackus.model.Position
-import trackus.queue.{GoogleTopic, LocalTopic}
+import trackus.database.DefaultDatabase
+import trackus.queue.PositionTopic
 import trackus.resource.Resources
 import trackus.service.PositionService
 
@@ -21,36 +16,28 @@ object Main extends App with LazyLogging {
 	Logging.start()
 
 	implicit val executorService = Executor()
-	implicit val database = Database.database
-	implicit val httpClient = PooledHttp1Client(
-		config = BlazeClientConfig.defaultConfig.copy(
-			customExecutor = Some(executorService)))
-	implicit val googleService = GoogleService()
-	implicit val positionService = new PositionService
-	implicit val positionEncoder = Encoder[Position]
-	implicit val positionDecoder = Decoder[Position]
-
+	implicit val httpClient = DefaultHttpClient()
+	implicit val googleMetadata = GoogleMetadata()
 
 	val server = for {
 
-		connected <- googleService.connected
+		database <- DefaultDatabase()
 
-		_ = logger.debug("Connected: " + connected)
+		positionService = {
+			implicit val database_ = database
 
-		topic <-
-			if (connected)
-				googleService.topic()
-					.flatMap(topic =>
-						GoogleTopic[Position](topic))
-			else
-				Task.now(new LocalTopic[Position])
-
-		_ <- topic.start
+			new PositionService()
+		}
 
 		_ <- positionService.initialize
 
+		positionTopic <- PositionTopic()
+
+		_ <- positionTopic.start
+
 		server <- {
-			implicit val positionTopic = topic
+			implicit val positionService_ = positionService
+			implicit val positionTopic_ = positionTopic
 
 			BlazeBuilder
 				.withServiceExecutor(executorService)
@@ -69,7 +56,7 @@ object Main extends App with LazyLogging {
 			else
 				Task.async[Nothing](_ => ()) // TODO: Fix shutdown behavior
 
-		_ <- topic.stop
+		_ <- positionTopic.stop
 
 	} yield server
 

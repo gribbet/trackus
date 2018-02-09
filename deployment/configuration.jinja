@@ -37,6 +37,8 @@ resources:
         items:
         - key: topic
           value: $(ref.{{ env["deployment"] }}-topic.name)
+        - key: database
+          value: $(ref.{{ env["deployment"] }}-database-instance.ipAddresses[0].ipAddress)
         - key: user-data
           value: |
             #cloud-config
@@ -174,6 +176,27 @@ resources:
   type: pubsub.v1.topic
   properties:
     topic: {{ env["deployment"] }}-topic
+
+- name: {{ env["deployment"] }}-database-instance
+  type: sqladmin.v1beta4.instance
+  properties:
+    databaseVersion: POSTGRES_9_6
+    settings:
+      tier: db-f1-micro
+
+- name: {{ env["deployment"] }}-database
+  type: sqladmin.v1beta4.database
+  properties:
+    name: trackus
+    instance: $(ref.{{ env["deployment"] }}-database-instance.name)
+
+- name: {{ env["deployment"] }}-database-user
+  type: sqladmin.v1beta4.user
+  properties:
+    name: trackus
+    password: trackus
+    instance: $(ref.{{ env["deployment"] }}-database-instance.name)
+    host: "%"
 
 - name: {{ env["deployment"] }}-api-certificate
   type: compute.beta.sslCertificate

@@ -20,9 +20,10 @@ object PositionResource {
 
 	def apply()(implicit
 		positionService: PositionService,
-		positionTopic: Topic[Position]) = HttpService {
+		positionTopic: Topic[Position]
+	) = HttpService {
 
-		case GET -> Root =>
+		case GET -> Root / "positions" =>
 			StreamSocket[Position](
 				positionService.stream ++ positionTopic.subscribe,
 				sink.lift(position =>
