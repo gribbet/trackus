@@ -7,7 +7,7 @@ import PositionService from "./PositionService";
 import StreamSocket from "./StreamSocket";
 import Trackus from "./Trackus";
 
-const socketUrl = "wss://api.trackus.grahamgibbons.com/"
+const socketUrl = "wss://api.trackus.grahamgibbons.com/positions"
 const mapboxToken = "pk.eyJ1IjoiZ3JhaGFtYWVyaWFsbGl2ZSIsImEiOiJjaXlnbjZlZmowM3dhMzJyd3BzMXo2am5wIn0.SIOs2eXS97bVJsRoTcuK-w";
 
 (<any>mapbox).accessToken = mapboxToken;
