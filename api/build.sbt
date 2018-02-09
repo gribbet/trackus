@@ -8,7 +8,7 @@ lazy val project = Project(
 	base = file("."))
 	.settings(
 
-		version := "0.0.7",
+		version := "0.0.8",
 		organization := "trackus",
 		scalaVersion := "2.12.4",
 

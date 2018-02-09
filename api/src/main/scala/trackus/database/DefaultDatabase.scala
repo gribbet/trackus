@@ -15,10 +15,9 @@ object DefaultDatabase {
 	): Task[Database[_ <: JdbcProfile]] =
 
 		googleMetadata.connected
-			.flatMap(connected => if (connected)
-				googleMetadata.database
-					.map(database =>
-						GoogleDatabase(database))
-			else
-				Task.now(MemoryDatabase()))
+			.map(connected =>
+				if (connected)
+					GoogleDatabase()
+				else
+					MemoryDatabase())
 }

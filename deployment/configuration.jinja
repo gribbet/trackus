@@ -37,8 +37,6 @@ resources:
         items:
         - key: topic
           value: $(ref.{{ env["deployment"] }}-topic.name)
-        - key: database
-          value: $(ref.{{ env["deployment"] }}-database-instance.ipAddresses[0].ipAddress)
         - key: user-data
           value: |
             #cloud-config
@@ -46,6 +44,8 @@ resources:
             users:
             - name: api
               uid: 2000
+            - name: sql_proxy
+              uid: 2001
 
             write_files:
             - path: /etc/systemd/system/api.service
@@ -60,12 +60,29 @@ resources:
                 [Service]
                 Environment="HOME=/home/api"
                 ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
-                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --name=api gcr.io/{{ env["project"] }}/api
+                ExecStart=/usr/bin/docker run --rm -u 2000 -p 80:8080 --link sql_proxy --name=api gcr.io/{{ env["project"] }}/api
                 ExecStop=/usr/bin/docker stop api
                 ExecStopPost=/usr/bin/docker rm api
 
+            - path: /etc/systemd/system/sql_proxy.service
+              permissions: 0644
+              owner: root
+              content: |
+                [Unit]
+                Description=Cloud SQL Proxy
+                Wants=gcr-online.target
+                After=gcr-online.target
+
+                [Service]
+                Environment="HOME=/home/sql_proxy"
+                ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
+                ExecStart=/usr/bin/docker run --rm -u 2001 -p 127.0.0.1:5432:5432 --name=sql_proxy gcr.io/cloudsql-docker/gce-proxy:1.11 /cloud_sql_proxy -instances=$(ref.{{ env["deployment"] }}-database-instance.connectionName)=tcp:0.0.0.0:5432
+                ExecStop=/usr/bin/docker stop sql_proxy
+                ExecStopPost=/usr/bin/docker rm sql_proxy
+
             runcmd:
             - systemctl daemon-reload
+            - systemctl start sql_proxy.service
             - systemctl start api.service
       disks:
       - deviceName: boot

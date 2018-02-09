@@ -9,13 +9,13 @@ import scala.concurrent.ExecutionContext
 
 object GoogleDatabase {
 
-	def apply(host: String)(implicit
+	def apply()(implicit
 		executorService: ExecutorService) =
 
 		new Database[PostgresProfile] {
 			val profile = PostgresProfile
 			val database = PostgresProfile.api.Database.forURL(
-				s"jdbc:postgresql://${host}/trackus",
+				s"jdbc:postgresql://sql_proxy/trackus",
 				user = "trackus",
 				password = "trackus",
 				driver = "slick.jdbc.PostgresProfile$",

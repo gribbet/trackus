@@ -15,8 +15,6 @@ trait GoogleMetadata {
 	val instance: Task[String]
 
 	val topic: Task[String]
-
-	val database: Task[String]
 }
 
 object GoogleMetadata {
@@ -45,9 +43,6 @@ object GoogleMetadata {
 
 			lazy val topic: Task[String] =
 				get("instance/attributes/topic")
-
-			lazy val database: Task[String] =
-				get("instance/attributes/database")
 
 			lazy val instance: Task[String] =
 				get("instance/name")
