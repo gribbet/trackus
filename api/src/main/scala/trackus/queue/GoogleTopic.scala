@@ -29,7 +29,7 @@ object GoogleTopic extends LazyLogging {
 		val projectId = ServiceOptions.getDefaultProjectId
 		val topic = TopicName.parse(name)
 		val publisher = Publisher.newBuilder(topic).build()
-		val queue = async.unboundedQueue[A]
+		val local = async.topic[A]()
 
 		for {
 			instance <- googleMetadata.instance
@@ -61,7 +61,7 @@ object GoogleTopic extends LazyLogging {
 
 					Task.fork(decoder
 						.decodeJson(json)
-						.map(queue.enqueueOne(_)
+						.map(local.publishOne(_)
 							.flatMap(_ => Task(consumer.ack())))
 						.getOrElse(Task(()))).run
 				})
@@ -93,7 +93,7 @@ object GoogleTopic extends LazyLogging {
 			}
 
 			def subscribe: Process[Task, A] =
-				queue.dequeue
+				local.subscribe
 		}
 	}
 }
